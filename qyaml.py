@@ -75,7 +75,8 @@ def do_query(doc, query):
             for k in doc: yield doc[k]
         else:
             for k in doc: yield k
-    yield doc
+    elif query == None:
+        yield doc
 
 def main():
     if len(sys.argv) != 2:
