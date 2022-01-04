@@ -1,95 +1,103 @@
-QYAML — simple YAML query engine
-================================
+QYAML - query YAML with YAML with YAML result
+=============================================
 
-Walk synchronously through query and document, and print selected branches of the latter.
+Walk synchronously through `query` and `doc`, and print the branches of `doc[query]` as a YAML document.
+Single result printed as scalar. Multiple — as list.
 
-Usage:
+DocTest setup
 
-```sh
-qyaml.py "query" < doc.yaml
-```
+    >>> from qyaml import qyaml, print_results
+    >>> def query(q): print_results(qyaml(doc, q))
 
-*Example input document*:
+Example input
+-------------
 
-```yaml
-object:
-    key1: value1
-    key2: value2
-array:
-- value3
-- value4
-```
+    >>> doc = '{ dict: { key1: "alpha", key2: "beta" }, list: [ 42, 73 ] }'
 
-*Example queries and results*:
+Querying dictionaries
+---------------------
 
-`object: key1`
+    >>> query('dict: key1')
+    alpha
+    ...
 
-```yaml
-value1
-```
+    >>> query('dict: { key1: alpha }')
+    true
+    ...
 
-`object: [key1, key2]`
+    >>> query('dict: [key1, key2]')
+    - alpha
+    - beta
 
-```yaml
-value1
-value2
-```
+    >>> query('dict')
+    key1: alpha
+    key2: beta
 
-`object`
+    >>> query('dict: true')
+    - alpha
+    - beta
 
-```yaml
-{ 'key1': 'value1', 'key2': 'value2' }
-```
+    >>> query('dict: false')
+    - key1
+    - key2
 
-`object: true`
+Querying lists
+---------------
 
-```yaml
-value1
-value2
-```
+    >>> query('list: 1')
+    73
+    ...
 
-`object: false`
+    >>> query('list: [0,1]')
+    - 42
+    - 73
 
-```yaml
-key1
-key2
-```
+    >>> query('list')
+    - 42
+    - 73
 
-`array: 1`
+    >>> query('list: { 0: 42 }')
+    true
+    ...
 
-```yaml
-value4
-```
+    >>> query('list: true')
+    - 42
+    - 73
 
-`array: [0,1]`
+Combining
+---------
 
-```yaml
-value3
-value4
-```
+    >>> query('[dict: key1, list: 0]')
+    - alpha
+    - 42
 
-`array`
+Query characters
+----------------
 
-```yaml
-[ 'value3', 'value4' ]
-```
+    >>> query('dict: { key1: [0,3,4]}')
+    - a
+    - h
+    - a
 
-`array: true`
+Errors
+------
 
-```yaml
-value3
-value4
-```
+    >>> query('missing')
+    Traceback (most recent call last):
+    ...
+    Exception: ['missing']
 
-`[object: key1, array: 0]`
+Multiple documents or queries
+------------------------------
 
-```yaml
-value1
-value3
-```
+    >>> print_results(qyaml("""dict: alpha
+    ... ---
+    ... dict: beta""", 'dict'))
+    - alpha
+    - beta
 
-`null`
-
-```yaml
-{'object': {'key1': 'value1', 'key2': 'value2'}, 'array': ['value3', 'value4']}
-```
+    >>> print_results(qyaml('[1, 2]', """0
+    ... ---
+    ... 1"""))
+    - 1
+    - 2
