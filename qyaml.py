@@ -3,7 +3,6 @@
 import sys
 import yaml
 from os import path
-from enum import Enum
 
 
 def qyaml(doc, query):
