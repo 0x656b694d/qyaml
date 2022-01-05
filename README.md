@@ -101,3 +101,9 @@ Multiple documents or queries
     ... 1"""))
     - 1
     - 2
+
+Not implemented
+---------------
+
+* Lookup a value in an array.
+* YAML error formatting

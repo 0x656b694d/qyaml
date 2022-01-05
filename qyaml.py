@@ -16,23 +16,19 @@ def qyaml(doc, query):
 
 
 def do_query(doc, query):
-    td, tq = type(doc), type(query)
-    if doc == None:
-        yield (False, query)
+    td, tq, err = type(doc), type(query), (False, query)
+    if doc == None and query != None:
+        yield err
     elif tq == str:
         if td == str:
-            yield (True, True) if query == doc else (False, query)
-        elif query not in doc:
-            yield (False, query)
+            yield (True, True) if query == doc else err
         else:
-            yield (True, doc[query])
-    elif tq == int or tq == float:
-        if td == int or td == float:
-            yield (True, True) if query == doc else (False, query)
-        elif query < 0 or query > len(doc):
-            yield (False, query)
+            yield (True, doc[query]) if query in doc else err
+    elif tq in [int, float]:
+        if td in [int, float]:
+            yield (True, True) if query == doc else err
         else:
-            yield (True, doc[query])
+            yield (True, doc[query]) if query >= 0 and query < len(doc) else err
     elif tq == list:
         for n in query:
             yield from do_query(doc, n)
@@ -40,7 +36,9 @@ def do_query(doc, query):
         for n in query:
             yield from do_query(doc[n], query[n])
     elif tq == bool:
-        if query and td == dict:
+        if td == bool:
+            yield (True, True) if query == doc else err
+        elif query and td == dict:
             for k in doc:
                 yield (True, doc[k])
         else:
