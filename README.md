@@ -12,7 +12,12 @@ DocTest setup
 Example input
 -------------
 
-    >>> doc = '{ dict: { key1: "alpha", key2: "beta" }, list: [ 42, 73 ] }'
+    >>> doc = """
+    ... dict:
+    ...     key1: alpha
+    ...     key2: beta
+    ... list: [ 42, 73 ]
+    ... """
 
 Querying dictionaries
 ---------------------
@@ -22,7 +27,7 @@ Querying dictionaries
     ...
 
     >>> query('dict: { key1: alpha }')
-    true
+    alpha
     ...
 
     >>> query('dict: [key1, key2]')
@@ -41,6 +46,9 @@ Querying dictionaries
     - key1
     - key2
 
+    >>> print_results(qyaml('', 'missing'))
+    False
+
 Querying lists
 ---------------
 
@@ -57,12 +65,38 @@ Querying lists
     - 73
 
     >>> query('list: { 0: 42 }')
-    true
+    42
     ...
 
     >>> query('list: true')
     - 42
     - 73
+
+    >>> query('list: { true: 73 }')
+    73
+    ...
+
+    >>> query('list: { false: 73 }')
+    42
+    ...
+
+    >>> query('list: { false: 55 }')
+    - 42
+    - 73
+
+    >>> query('list: { true: 55 }')
+
+    >>> _=print_results(qyaml('[{a: 1, b: 2}, {a: 3, c: 4}]', 'true: { a: 1 }'))
+    a: 1
+    b: 2
+
+    >>> _=print_results(qyaml('[{a: 1, b: 2}, {c: 3, d: 4}]', 'true: d'))
+    c: 3
+    d: 4
+
+    >>> _=print_results(qyaml('[{a: 2}, {a: 1, b: 2}, {a: 1, c: 3}]', '{true: {a: 1}, false: c}'))
+    a: 1
+    b: 2
 
 Combining
 ---------
@@ -79,24 +113,16 @@ Query characters
     - h
     - a
 
-Errors
-------
-
-    >>> query('missing')
-    Traceback (most recent call last):
-    ...
-    Exception: ['missing']
-
 Multiple documents or queries
 ------------------------------
 
-    >>> print_results(qyaml("""dict: alpha
+    >>> _=print_results(qyaml("""dict: alpha
     ... ---
     ... dict: beta""", 'dict'))
     - alpha
     - beta
 
-    >>> print_results(qyaml('[1, 2]', """0
+    >>> _=print_results(qyaml('[1, 2]', """0
     ... ---
     ... 1"""))
     - 1
@@ -105,5 +131,4 @@ Multiple documents or queries
 Not implemented
 ---------------
 
-* Lookup a value in an array.
-* YAML error formatting
+* YAML error formatting.
