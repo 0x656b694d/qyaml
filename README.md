@@ -2,9 +2,10 @@ QYAML - query YAML with YAML with YAML result
 =============================================
 
 Walk synchronously through `query` and `doc`, and print the branches of `doc[query]` as a YAML document.
+
 Single result printed as scalar. Multiple — as list.
 
-DocTest setup
+DocTest setup. Run tests with `python -m doctest README.md`.
 
     >>> from qyaml import qyaml, print_results
     >>> def query(q): print_results(qyaml(doc, q))
@@ -16,7 +17,7 @@ Example input
     ... dict:
     ...     key1: alpha
     ...     key2: beta
-    ... list: [ 42, 73 ]
+    ... list: [ 42, { second: 73 }, 'third' ]
     ... """
 
 Querying dictionaries
@@ -53,50 +54,49 @@ Querying lists
 ---------------
 
     >>> query('list: 1')
-    73
-    ...
+    second: 73
 
     >>> query('list: [0,1]')
     - 42
-    - 73
+    - second: 73
 
     >>> query('list')
     - 42
-    - 73
+    - second: 73
+    - third
 
     >>> query('list: { 0: 42 }')
     42
     ...
 
-    >>> query('list: true')
-    - 42
-    - 73
-
-    >>> query('list: { true: 73 }')
+    >>> query('list: { 1: second }')
     73
     ...
 
-    >>> query('list: { false: 73 }')
-    42
-    ...
-
-    >>> query('list: { false: 55 }')
+    >>> query('list: true')
     - 42
-    - 73
+    - second: 73
+    - third
+
+    >>> query('list: { true: second }')
+    second: 73
+
+    >>> query('list: { true: { second: 73 } }')
+    second: 73
+
+    >>> query('list: { false: 42 }')
+    - second: 73
+    - third
+
+    >>> query('list: { false: [ 42, third ] }')
+    second: 73
 
     >>> query('list: { true: 55 }')
 
-    >>> _=print_results(qyaml('[{a: 1, b: 2}, {a: 3, c: 4}]', 'true: { a: 1 }'))
-    a: 1
-    b: 2
-
-    >>> _=print_results(qyaml('[{a: 1, b: 2}, {c: 3, d: 4}]', 'true: d'))
-    c: 3
-    d: 4
-
-    >>> _=print_results(qyaml('[{a: 2}, {a: 1, b: 2}, {a: 1, c: 3}]', '{true: {a: 1}, false: c}'))
-    a: 1
-    b: 2
+    >>> _=print_results(qyaml('[["a"], ["a","b"], ["a","c"]]', '{true: a, false: c}'))
+    - - a
+    - - a
+      - b
 
 Combining
 ---------
@@ -108,7 +108,7 @@ Combining
 Query characters
 ----------------
 
-    >>> query('dict: { key1: [0,3,4]}')
+    >>> query('dict: {key1: [0,3,4]}')
     - a
     - h
     - a
@@ -127,8 +127,3 @@ Multiple documents or queries
     ... 1"""))
     - 1
     - 2
-
-Not implemented
----------------
-
-* YAML error formatting.
