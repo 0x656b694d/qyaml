@@ -1,4 +1,4 @@
-QYAML - query YAML with YAML with YAML result
+QYAML — query YAML with YAML with YAML result
 =============================================
 
 Walk synchronously through `query` and `doc`, and print the branches of `doc[query]` as a YAML document.
