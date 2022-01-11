@@ -14,13 +14,13 @@ import sys
 import yaml
 
 
-def qyaml(doc, query):
+def qyaml(docs, queries):
     result, errors = [], []
-    for doc in yaml.safe_load_all(doc):
-        for query in yaml.safe_load_all(query):
+    for doc in yaml.safe_load_all(docs):
+        for query in yaml.safe_load_all(queries):
             for ok, value in do_query(doc, query):
                 (result if ok else errors).append(value)
-    return result, errors if query and (result or errors) else [(False, query)]
+    return result, errors if queries and (result or errors) else [(False, queries)]
 
 
 def do_query(doc, query):
