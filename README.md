@@ -3,7 +3,7 @@ QYAML — query YAML with YAML with YAML result
 
 Walk synchronously through `query` and `doc`, and print the branches of `doc[query]` as a YAML document.
 
-Single result printed as scalar. Multiple — as list.
+Result is printed as a list.
 
 DocTest setup. Run tests with `python -m doctest README.md`.
 
@@ -24,20 +24,18 @@ Querying dictionaries
 ---------------------
 
     >>> query('dict: key1')
-    alpha
-    ...
+    - alpha
 
     >>> query('dict: { key1: alpha }')
-    alpha
-    ...
+    - alpha
 
     >>> query('dict: [key1, key2]')
     - alpha
     - beta
 
     >>> query('dict')
-    key1: alpha
-    key2: beta
+    - key1: alpha
+      key2: beta
 
     >>> query('dict: true')
     - alpha
@@ -47,6 +45,8 @@ Querying dictionaries
     - key1
     - key2
 
+`print_results` function returns False if nothing found:
+
     >>> print_results(qyaml('', 'missing'))
     False
 
@@ -54,24 +54,25 @@ Querying lists
 ---------------
 
     >>> query('list: 1')
-    second: 73
+    - second: 73
 
     >>> query('list: [0,1]')
     - 42
     - second: 73
 
+    >>> query('list: second')
+    - 73
+
     >>> query('list')
-    - 42
-    - second: 73
-    - third
+    - - 42
+      - second: 73
+      - third
 
     >>> query('list: { 0: 42 }')
-    42
-    ...
+    - 42
 
     >>> query('list: { 1: second }')
-    73
-    ...
+    - 73
 
     >>> query('list: true')
     - 42
@@ -79,17 +80,17 @@ Querying lists
     - third
 
     >>> query('list: { true: second }')
-    second: 73
+    - second: 73
 
     >>> query('list: { true: { second: 73 } }')
-    second: 73
+    - second: 73
 
     >>> query('list: { false: 42 }')
     - second: 73
     - third
 
     >>> query('list: { false: [ 42, third ] }')
-    second: 73
+    - second: 73
 
     >>> query('list: { true: 55 }')
 

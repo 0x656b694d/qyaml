@@ -29,8 +29,17 @@ def do_query(doc, query):
         yield err
     elif tq == bool and td == bool or tq == str and td == str or tq in [int, float] and td in [int, float]:
         yield (True, doc) if query == doc else err
-    elif tq == str and td in [list, dict] and query in doc:
-        yield (True, query if td == list else doc[query])
+    elif tq == str and td == dict:
+        yield (True, doc[query]) if query in doc else err
+    elif tq == str and td == list:
+        found = False
+        for d in doc:
+            for ok, x in do_query(d, query):
+                if ok:
+                    yield (True, x)
+                    found = True
+        if not found:
+            yield err
     elif tq in [int, float]:
         yield (True, doc[query]) if td == dict and query in doc or td in [list, str] and 0 <= query < len(doc) else err
     elif tq == bool:
@@ -78,7 +87,7 @@ def do_query(doc, query):
 def print_results(results):
     r, err = results
     if len(r):
-        yaml.safe_dump(r if len(r) > 1 else r[0], stream=sys.stdout)
+        yaml.safe_dump(r, stream=sys.stdout)
     return len(err) == 0
 
 
