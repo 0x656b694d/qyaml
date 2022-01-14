@@ -8,7 +8,8 @@ Result is printed as a list.
 DocTest setup. Run tests with `python -m doctest README.md`.
 
     >>> from qyaml import qyaml, print_results
-    >>> def query(q): print_results(qyaml(doc, q))
+    >>> qy = qyaml
+    >>> def qyaml(d, q): print_results(qy(d, q))
 
 Example input
 -------------
@@ -23,78 +24,74 @@ Example input
 Querying dictionaries
 ---------------------
 
-    >>> query('dict: key1')
+    >>> qyaml(doc, 'dict: key1')
     - alpha
 
-    >>> query('dict: { key1: alpha }')
+    >>> qyaml(doc, 'dict: { key1: alpha }')
     - alpha
 
-    >>> query('dict: [key1, key2]')
+    >>> qyaml(doc, 'dict: [key1, key2]')
     - alpha
     - beta
 
-    >>> query('dict')
+    >>> qyaml(doc, 'dict')
     - key1: alpha
       key2: beta
 
-    >>> query('dict: true')
+    >>> qyaml(doc, 'dict: true')
     - alpha
     - beta
 
-    >>> query('dict: false')
+    >>> qyaml(doc, 'dict: false')
     - key1
     - key2
 
-`print_results` function returns False if nothing found:
-
-    >>> print_results(qyaml('', 'missing'))
-    False
+    >>> qyaml('', 'missing')
 
 Querying lists
 ---------------
 
-    >>> query('list: 1')
+    >>> qyaml(doc, 'list: 1')
     - second: 73
 
-    >>> query('list: [0,1]')
+    >>> qyaml(doc, 'list: [0, 1]')
     - 42
     - second: 73
 
-    >>> query('list: second')
+    >>> qyaml(doc, 'list: second')
     - 73
 
-    >>> query('list')
+    >>> qyaml('a: [{b: {c: d}},{b: {c: e}}]', 'a: {b: c}')
+    - d
+    - e
+
+    >>> qyaml(doc, 'list')
     - - 42
       - second: 73
       - third
 
-    >>> query('list: { 0: 42 }')
+    >>> qyaml(doc, 'list: { 0: 42 }')
     - 42
 
-    >>> query('list: { 1: second }')
+    >>> qyaml(doc, 'list: { 1: second }')
     - 73
 
-    >>> query('list: true')
-    - 42
+    >>> qyaml(doc, 'list: { true: second }')
+    - second: 73
+
+    >>> qyaml(doc, 'list: { true: { second: 73 } }')
+    - second: 73
+
+    >>> qyaml(doc, 'list: { false: 42 }')
     - second: 73
     - third
 
-    >>> query('list: { true: second }')
+    >>> qyaml(doc, 'list: { false: [ 42, third ] }')
     - second: 73
 
-    >>> query('list: { true: { second: 73 } }')
-    - second: 73
+    >>> qyaml(doc, 'list: { true: 55 }')
 
-    >>> query('list: { false: 42 }')
-    - second: 73
-    - third
-
-    >>> query('list: { false: [ 42, third ] }')
-    - second: 73
-
-    >>> query('list: { true: 55 }')
-
-    >>> _=print_results(qyaml('[["a"], ["a","b"], ["a","c"]]', '{true: a, false: c}'))
+    >>> qyaml('[["a"], ["a","b"], ["a","c"]]', '{true: a, false: c}')
     - - a
     - - a
       - b
@@ -102,14 +99,14 @@ Querying lists
 Combining
 ---------
 
-    >>> query('[dict: key1, list: 0]')
+    >>> qyaml(doc, '[dict: key1, list: 0]')
     - alpha
     - 42
 
 Query characters
 ----------------
 
-    >>> query('dict: {key1: [0,3,4]}')
+    >>> qyaml(doc, 'dict: {key1: [0,3,4]}')
     - a
     - h
     - a
@@ -117,14 +114,14 @@ Query characters
 Multiple documents or queries
 ------------------------------
 
-    >>> _=print_results(qyaml("""dict: alpha
+    >>> qyaml("""dict: alpha
     ... ---
-    ... dict: beta""", 'dict'))
+    ... dict: beta""", 'dict')
     - alpha
     - beta
 
-    >>> _=print_results(qyaml('[1, 2]', """0
+    >>> qyaml('[1, 2]', """0
     ... ---
-    ... 1"""))
+    ... 1""")
     - 1
     - 2
