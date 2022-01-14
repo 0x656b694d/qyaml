@@ -4,8 +4,7 @@
 Example:
 
     $ echo 'data: { password: superman }' | qyaml.py 'data: password'
-    superman
-    ...
+    - superman
 
 See README.md for more examples.
 """
