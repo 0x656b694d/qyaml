@@ -58,13 +58,9 @@ def do_query(doc, query):
     elif td in [list, str, dict] and tq in [int, float]:
         yield (True, doc[query]) if td == dict and query in doc or td in [list, str] and 0 <= query < len(doc) else err
     elif td == list and tq == list:
-        i = 0
         for d in doc:
             for q in query:
-                if type(q) == int and q == i:
-                    yield (True, d)
-                    break
-            i += 1
+                yield from do_query(d, q)
     elif td in [dict, str] and tq == list:
         for q in query:
             yield from do_query(doc, q)

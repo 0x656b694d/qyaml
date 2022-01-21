@@ -54,7 +54,7 @@ Querying lists
     >>> qyaml(doc, 'list: 1')
     - second: 73
 
-    >>> qyaml(doc, 'list: [0, 1]')
+    >>> qyaml(doc, '[list: 0, list: 1]')
     - 42
     - second: 73
 
@@ -103,10 +103,19 @@ Combining
     - alpha
     - 42
 
+    >>> qyaml("""dict: {list: [
+    ...    {key1: value1, key2: value2, key3: value3},
+    ...    {key1: value4, key2: value5, key3: value6}
+    ... ]}""", 'dict: [list: [key1, key2]]')
+    - value1
+    - value2
+    - value4
+    - value5
+
 Query characters
 ----------------
 
-    >>> qyaml(doc, 'dict: {key1: [0,3,4]}')
+    >>> qyaml(doc, 'dict: {key1: [0, 3, 4]}')
     - a
     - h
     - a
