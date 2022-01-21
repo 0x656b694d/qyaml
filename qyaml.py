@@ -21,15 +21,19 @@ def qyaml(docs, queries):
                 (result if ok else errors).append(value)
     return result, errors if queries and (result or errors) else [(False, queries)]
 
+
 def dok_list(doc, query):
     for q in query:
         yield from dok_scalar(doc, q)
 
+
 def dok_scalar(doc, query):
     return (ok for ok, _ in do_query(doc, query))
 
+
 def dok(doc, query):
     yield from (dok_list if type(query) == list else dok_scalar)(doc, query)
+
 
 def do_query(doc, query):
     td, tq, err = type(doc), type(query), (False, query)
@@ -68,7 +72,7 @@ def do_query(doc, query):
         for k, v in query.items():
             yield from do_query(doc.get(k), v)
     elif td == list and tq == dict:
-        f = { }
+        f = {}
         for k, v in query.items():
             if type(k) == bool:
                 f[k] = v
@@ -80,7 +84,8 @@ def do_query(doc, query):
                 continue
             only_bool = True
             for k, v in query.items():
-                if type(k) == bool: continue
+                if type(k) == bool:
+                    continue
                 only_bool = False
                 if type(k) == int and k == i:
                     for ok, x in do_query(d, v):
@@ -90,7 +95,7 @@ def do_query(doc, query):
                 yield (True, d)
             else:
                 yield from do_query(d, query)
-            i+=1
+            i += 1
     else:
         yield err
 
