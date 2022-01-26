@@ -44,8 +44,12 @@ def do_query(doc, query):
     elif td == dict and tq in [str, int, float]:
         yield (True, {query: doc[query]}) if query in doc else err
     elif td == dict and tq == bool:
-        for v in doc.values() if query else doc.keys():
-            yield (True, v)
+        if query:
+            for k, v in doc.items():
+                yield (True, {k: v})
+        else:
+            for k in doc.keys():
+                yield (True, k)
     elif td == list and tq == str:
         found = False
         for d in doc:
@@ -55,18 +59,32 @@ def do_query(doc, query):
                     found = True
         if not found:
             yield err
-    elif td in [list, str, dict] and tq in [int, float]:
-        yield (True, doc[query]) if td == dict and query in doc or td in [list, str] and 0 <= query < len(doc) else err
+    elif td == dict and tq in [int, float]:
+        yield (True, doc[query]) if query in doc else err
+    elif td in [list, str] and tq in [int, float]:
+        yield (True, doc[query]) if 0 <= query < len(doc) else err
     elif td == list and tq == list:
         for d in doc:
+            result = []
             for q in query:
-                yield from do_query(d, q)
+                for ok, x in do_query(d, q):
+                    if ok:
+                        result.append(x)
+            if len(result): yield (True, result)
     elif td in [dict, str] and tq == list:
         for q in query:
             yield from do_query(doc, q)
     elif td == dict and tq == dict:
+        result = {}
         for k, v in query.items():
-            yield from do_query(doc.get(k), v)
+            for ok, x in do_query(doc.get(k), v):
+                if ok:
+                    if k in result:
+                        result[k].append(x)
+                    else:
+                        result[k] = [x]
+        if len(result):
+            yield (True, result)
     elif td == list and tq == dict:
         f = {}
         for k, v in query.items():
