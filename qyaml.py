@@ -42,7 +42,7 @@ def do_query(doc, query):
     elif tq == bool and td == bool or tq == str and td == str or tq in [int, float] and td in [int, float]:
         yield (True, doc) if query == doc else err
     elif td == dict and tq in [str, int, float]:
-        yield (True, doc[query]) if query in doc else err
+        yield (True, {query: doc[query]}) if query in doc else err
     elif td == dict and tq == bool:
         for v in doc.values() if query else doc.keys():
             yield (True, v)

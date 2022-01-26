@@ -3,7 +3,10 @@ QYAML — query YAML with YAML with YAML result
 
 Walk synchronously through `query` and `doc`, and print the branches of `doc[query]` as a YAML document.
 
-Result is printed as a list.
+Result is printed to standard output as a list of found matches. The output may be formatted with `fyaml` to flatten the list (default behavior) or keep the keys with `keys` argument, or format as a JSON string with `json` argument:
+
+    $ cat file.yaml | qyaml key | fyaml
+    value
 
 DocTest setup. Run tests with `python -m doctest README.md`.
 
@@ -25,18 +28,19 @@ Querying dictionaries
 ---------------------
 
     >>> qyaml(doc, 'dict: key1')
-    - alpha
+    - key1: alpha
 
     >>> qyaml(doc, 'dict: { key1: alpha }')
     - alpha
 
     >>> qyaml(doc, 'dict: [key1, key2]')
-    - alpha
-    - beta
+    - key1: alpha
+    - key2: beta
 
     >>> qyaml(doc, 'dict')
-    - key1: alpha
-      key2: beta
+    - dict:
+        key1: alpha
+        key2: beta
 
     >>> qyaml(doc, 'dict: true')
     - alpha
@@ -59,14 +63,15 @@ Querying lists
     - second: 73
 
     >>> qyaml(doc, 'list: second')
-    - 73
+    - second: 73
 
     >>> qyaml('a: [{b: {c: d}},{b: {c: e}}]', 'a: {b: c}')
-    - d
-    - e
+    - c: d
+    - c: e
 
     >>> qyaml(doc, 'list')
-    - - 42
+    - list:
+      - 42
       - second: 73
       - third
 
@@ -74,7 +79,7 @@ Querying lists
     - 42
 
     >>> qyaml(doc, 'list: { 1: second }')
-    - 73
+    - second: 73
 
     >>> qyaml(doc, 'list: { true: second }')
     - second: 73
@@ -100,17 +105,17 @@ Combining
 ---------
 
     >>> qyaml(doc, '[dict: key1, list: 0]')
-    - alpha
+    - key1: alpha
     - 42
 
     >>> qyaml("""dict: {list: [
     ...    {key1: value1, key2: value2, key3: value3},
     ...    {key1: value4, key2: value5, key3: value6}
     ... ]}""", 'dict: [list: [key1, key2]]')
-    - value1
-    - value2
-    - value4
-    - value5
+    - key1: value1
+    - key2: value2
+    - key1: value4
+    - key2: value5
 
 Query characters
 ----------------
@@ -126,8 +131,8 @@ Multiple documents or queries
     >>> qyaml("""dict: alpha
     ... ---
     ... dict: beta""", 'dict')
-    - alpha
-    - beta
+    - dict: alpha
+    - dict: beta
 
     >>> qyaml('[1, 2]', """0
     ... ---
