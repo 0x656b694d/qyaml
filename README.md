@@ -1,7 +1,41 @@
 QYAML — query YAML with YAML with YAML result
 =============================================
 
-Walk synchronously through `query` and `doc`, and print the branches of `doc[query]` as a YAML document.
+Walk synchronously through `query` and `doc`, and print the list of matching branches of `doc` as a YAML document.
+
+Result is printed to standard output as a list of found matches, including their keys.
+
+Given `file.yaml`:
+
+```yaml
+dict:
+  first: value1
+  second: value2
+```
+
+QYAML may be used to query the value of the `first` key of the `dict` dictionary:
+
+```shell
+$ qyaml.py "dict: first" < file.yaml
+- dict:
+    first: value1
+```
+
+The output may be flatten with `fyaml` to only values (default behavior) or preserving the keys with `keys` argument, or format as a JSON string with `json` argument:
+
+```shell
+$ cat file.yaml | qyaml.py "dict: first" | fyaml
+value1
+$ cat file.yaml | qyaml.py "dict: first" | fyaml keys
+first: value1
+$ cat file.yaml | qyaml.py dict | fyaml json
+["value1", "value2"]
+$ cat file.yaml | qyaml.py dict | fyaml json keys
+[{"first": "value1"}, {"second": "value2"}]
+```
+
+Query rules
+-----------
 
 | Query\Document  | String      | Number | Boolean |        List                  |   Dictionary      |
 |-----------------|-------------|--------|---------|------------------------------|-------------------|
@@ -11,19 +45,20 @@ Walk synchronously through `query` and `doc`, and print the branches of `doc[que
 | List            | for-each    |   -    |    -    | match `list[i]` for each `q` | search keys       |
 | Dictionary      |      -      |   -    |    -    | i: match, bool: filter       | key:value match   |
 
-Result is printed to standard output as a list of found matches, including their keys. The output may be formatted with `fyaml` to flatten the list (default behavior) or keep the keys with `keys` argument, or format as a JSON string with `json` argument:
+## Tests and Examples
 
-    $ cat file.yaml | qyaml key | fyaml
-    value
+Run tests with `python -m doctest README.md`.
 
-DocTest setup. Run tests with `python -m doctest README.md`.
+<details>
+    <summary>DocTest setup</summary>
 
     >>> from qyaml import qyaml, print_results
     >>> qy = qyaml
     >>> def qyaml(d, q): print_results(qy(d, q))
 
-Example input
--------------
+</details>
+
+#### Example input
 
     >>> doc = """
     ... dict:
@@ -32,8 +67,7 @@ Example input
     ... list: [ 42, { second: 73 }, 'third' ]
     ... """
 
-Querying dictionaries
----------------------
+### Querying dictionaries
 
     >>> qyaml(doc, 'dict: key1')
     - dict:
@@ -71,8 +105,7 @@ Querying dictionaries
 
     >>> qyaml('', 'missing')
 
-Querying lists
----------------
+### Querying lists
 
     >>> qyaml(doc, 'list: 1')
     - list:
@@ -137,8 +170,7 @@ Querying lists
     - - a
       - b
 
-Combining
----------
+### Combining
 
     >>> qyaml(doc, '[dict: key1, list: 0]')
     - dict:
@@ -157,8 +189,7 @@ Combining
         - - key1: value4
           - key2: value5
 
-Query characters
-----------------
+### Query characters
 
     >>> qyaml(doc, 'dict: {key1: [0, 3, 4]}')
     - dict:
@@ -167,8 +198,7 @@ Query characters
         - h
         - a
 
-Multiple documents or queries
-------------------------------
+### Multiple documents or queries
 
     >>> qyaml("""dict: alpha
     ... ---
