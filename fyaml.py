@@ -12,7 +12,10 @@ def print_results(docs, args):
 
 def fyaml(docs, args):
     if args.json:
-        yield json.dumps(*yaml.safe_load_all(docs))
+        result = []
+        for doc in yaml.safe_load_all(docs):
+            result.extend(format(doc, args))
+        yield json.dumps(result)
     else:
         for doc in yaml.safe_load_all(docs):
             yield from format(doc, args)
@@ -29,7 +32,7 @@ def format(doc, args):
     elif dt == tuple:
         k, v = doc
         if args.keys and type(v) in [int, float, str, bool]:
-            yield "{}: {}".format(k, v)
+            yield {k: v} if args.json else "{}: {}".format(k, v)
         else:
             yield from format(v, args)
     elif dt in [int, float, str, bool]:
