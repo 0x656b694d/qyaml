@@ -11,6 +11,7 @@ See README.md for more examples.
 
 import sys
 import yaml
+import re
 
 
 def qyaml(docs, queries):
@@ -35,13 +36,25 @@ def dok(doc, query):
     yield from (dok_list if type(query) == list else dok_scalar)(doc, query)
 
 
+def match(doc, query):
+    return re.fullmatch(query, doc)
+
+
 def do_query(doc, query):
     td, tq, err = type(doc), type(query), (False, query)
     if doc is None and query is not None:
         yield err
-    elif tq == bool and td == bool or tq == str and td == str or tq in [int, float] and td in [int, float]:
+    elif tq == str and td == str:
+        yield (True, doc) if match(doc, query) else err
+    elif tq == bool and td == bool or tq in [int, float] and td in [int, float]:
         yield (True, doc) if query == doc else err
-    elif td == dict and tq in [str, int, float]:
+    elif td == dict and tq == str:
+        keys = filter(lambda k: match(k, query), doc.keys())
+        for k in keys:
+            yield (True, {k: doc[k]})
+        if not keys:
+            yield err
+    elif td == dict and tq in [int, float]:
         yield (True, {query: doc[query]}) if query in doc else err
     elif td == dict and tq == bool:
         if query:
@@ -70,7 +83,8 @@ def do_query(doc, query):
                 for ok, x in do_query(d, q):
                     if ok:
                         result.append(x)
-            if len(result): yield (True, result)
+            if len(result):
+                yield (True, result)
     elif td in [dict, str] and tq == list:
         for q in query:
             yield from do_query(doc, q)

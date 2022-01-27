@@ -3,6 +3,14 @@ QYAML — query YAML with YAML with YAML result
 
 Walk synchronously through `query` and `doc`, and print the branches of `doc[query]` as a YAML document.
 
+| Query\Document  | String      | Number | Boolean |        List                  |   Dictionary      |
+|-----------------|-------------|--------|---------|------------------------------|-------------------|
+| String (regexp) | regex-match |   -    |    -    | regex-match list elements    | regex-match keys  |
+| Number          | `str[i]`    | match  |    -    | `list[i]`                    | -                 |
+| Boolean         |      -      |   -    | match   | -                            | b ? values : keys |
+| List            | for-each    |   -    |    -    | match `list[i]` for each `q` | search keys       |
+| Dictionary      |      -      |   -    |    -    | i: match, bool: filter       | key:value match   |
+
 Result is printed to standard output as a list of found matches, including their keys. The output may be formatted with `fyaml` to flatten the list (default behavior) or keep the keys with `keys` argument, or format as a JSON string with `json` argument:
 
     $ cat file.yaml | qyaml key | fyaml
@@ -41,6 +49,11 @@ Querying dictionaries
       - key1: alpha
       - key2: beta
 
+    >>> qyaml(doc, 'dict: key.')
+    - dict:
+      - key1: alpha
+      - key2: beta
+
     >>> qyaml(doc, 'dict')
     - dict:
         key1: alpha
@@ -72,6 +85,10 @@ Querying lists
       - second: 73
 
     >>> qyaml(doc, 'list: second')
+    - list:
+      - second: 73
+
+    >>> qyaml(doc, 'list: s.*')
     - list:
       - second: 73
 
