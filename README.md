@@ -13,13 +13,15 @@ dict:
   second: value2
 ```
 
-QYAML may be used to query the value of the `first` key of the `dict` dictionary:
+QYAML may be used to query, for example, the value of the `first` key of the `dict` dictionary:
 
 ```shell
 $ qyaml.py "dict: first" < file.yaml
 - dict:
     first: value1
 ```
+
+The query is itself a YAML document.
 
 The output may be flatten with `fyaml` to only values (default behavior) or preserving the keys with `keys` argument, or format as a JSON string with `json` argument:
 
