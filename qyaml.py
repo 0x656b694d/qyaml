@@ -13,7 +13,7 @@ import sys
 from types import NoneType
 import yaml
 import re
-from typing import Dict, Generator, Any, Tuple
+from typing import Any, Generator, Tuple
 
 
 def qyaml(docs, queries):
@@ -25,15 +25,18 @@ def qyaml(docs, queries):
     return result, errors if queries and (result or errors) else [(False, queries)]
 
 
-def matchfunc(doc, query):
+ResultGenerator = Generator[Tuple[bool, Any], NoneType, NoneType]
+
+
+def matchfunc(doc, query) -> ResultGenerator:
     yield (True, doc) if re.fullmatch(query, doc) else (False, query)
 
 
-def eq(doc, query):
+def eq(doc, query) -> ResultGenerator:
     yield (True, doc) if query == doc else (False, query)
 
 
-def dict_str(doc, query):
+def dict_str(doc: dict, query: str) -> ResultGenerator:
     keys = filter(lambda k: re.fullmatch(query, k), doc.keys())
     if keys:
         yield from ((True, {k: doc[k]}) for k in keys)
@@ -41,7 +44,7 @@ def dict_str(doc, query):
         yield (False, query)
 
 
-def dict_bool(doc, query):
+def dict_bool(doc: dict, query: bool) -> ResultGenerator:
     if query:
         for k, v in doc.items():
             yield (True, {k: v})
@@ -50,7 +53,7 @@ def dict_bool(doc, query):
             yield (True, k)
 
 
-def list_str(doc, query):
+def list_str(doc: list, query: str) -> ResultGenerator:
     found = False
     for d in doc:
         for ok, x in do_query(d, query):
@@ -61,7 +64,7 @@ def list_str(doc, query):
         yield (False, query)
 
 
-def list_list(doc, query):
+def list_list(doc: list, query: list) -> ResultGenerator:
     for d in doc:
         result = []
         for q in query:
@@ -72,12 +75,12 @@ def list_list(doc, query):
             yield (True, result)
 
 
-def for_q_in_query(doc, query):
+def for_q_in_query(doc, query) -> ResultGenerator:
     for q in query:
         yield from do_query(doc, q)
 
 
-def dict_dict(doc, query):
+def dict_dict(doc: dict, query: dict) -> ResultGenerator:
     result = {}
     for k, v in query.items():
         for ok, x in do_query(doc.get(k), v):
@@ -90,7 +93,7 @@ def dict_dict(doc, query):
         yield (True, result)
 
 
-def dok_list(doc, query):
+def dok_list(doc, query: list):
     for q in query:
         yield from dok_scalar(doc, q)
 
@@ -103,7 +106,7 @@ def dok(doc, query):
     yield from (dok_list if type(query) == list else dok_scalar)(doc, query)
 
 
-def list_dict(doc, query):
+def list_dict(doc: list, query: dict) -> ResultGenerator:
     f = {}
     for k, v in query.items():
         if type(k) == bool:
@@ -128,15 +131,15 @@ def list_dict(doc, query):
         i += 1
 
 
-def x_index(doc, query):
+def x_index(doc, query) -> ResultGenerator:
     yield (True, doc[query]) if 0 <= query < len(doc) else (False, query)
 
 
-def x_key(doc, query):
+def x_key(doc, query) -> ResultGenerator:
     yield (True, {query: doc[query]}) if query in doc else (False, query)
 
 
-MATCHING_RULES: Dict[str, Dict[str, Generator[Tuple[bool, Any], NoneType, NoneType]]] = {
+MATCHING_RULES: dict[str, dict[str, ResultGenerator]] = {
     None: {None: eq},
     str: {str: matchfunc, int: x_index, list: for_q_in_query},
     int: {int: eq, float: eq},
