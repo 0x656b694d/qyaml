@@ -16,7 +16,7 @@ dict:
 QYAML may be used to query, for example, the value of the `first` key of the `dict` dictionary:
 
 ```shell
-$ qyaml.py "dict: first" < file.yaml
+$ qyaml "dict: first" < file.yaml
 - dict:
     first: value1
 ```
@@ -26,16 +26,16 @@ The query is itself a YAML document.
 The output may be flatten with `fyaml` to only values (default behavior) or preserving the keys with `keys` argument, or format as a JSON string with `json` argument:
 
 ```shell
-$ cat file.yaml | qyaml.py "dict: first" | fyaml
+$ cat file.yaml | qyaml "dict: first" | fyaml
 value1
 
-$ cat file.yaml | qyaml.py "dict: first" | fyaml keys
+$ cat file.yaml | qyaml "dict: first" | fyaml keys
 first: value1
 
-$ cat file.yaml | qyaml.py dict | fyaml json
+$ cat file.yaml | qyaml dict | fyaml json
 ["value1", "value2"]
 
-$ cat file.yaml | qyaml.py dict | fyaml json keys
+$ cat file.yaml | qyaml dict | fyaml json keys
 [{"first": "value1"}, {"second": "value2"}]
 ```
 
