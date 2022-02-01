@@ -5,6 +5,7 @@ Run tests with `python -m doctest tests/doctests.md`.
 <details>
     <summary>DocTest setup</summary>
 
+    >>> import sys; sys.path.append("src")
     >>> from qyaml import qyaml, print_results
     >>> qy = qyaml
     >>> def qyaml(d, q): print_results(qy(d, q))
