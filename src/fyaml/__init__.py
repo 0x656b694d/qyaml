@@ -45,5 +45,6 @@ class Args(object):
         self.json = "json" in argv
 
 
-if __name__ == '__main__':
+def main():
     print_results(sys.stdin, Args(sys.argv))
+

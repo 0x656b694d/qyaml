@@ -169,7 +169,7 @@ def print_results(results):
     return len(err) == 0
 
 
-if __name__ == '__main__':
+def main():
     if len(sys.argv) < 2:
         print(__doc__, file=sys.stderr)
         print("\nUsage: %s query < doc" %
@@ -182,3 +182,4 @@ if __name__ == '__main__':
     except Exception as err:
         print("Error:", err, file=sys.stderr)
         exit(1)
+
