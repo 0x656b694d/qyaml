@@ -28,10 +28,13 @@ The output may be flatten with `fyaml` to only values (default behavior) or pres
 ```shell
 $ cat file.yaml | qyaml.py "dict: first" | fyaml
 value1
+
 $ cat file.yaml | qyaml.py "dict: first" | fyaml keys
 first: value1
+
 $ cat file.yaml | qyaml.py dict | fyaml json
 ["value1", "value2"]
+
 $ cat file.yaml | qyaml.py dict | fyaml json keys
 [{"first": "value1"}, {"second": "value2"}]
 ```
