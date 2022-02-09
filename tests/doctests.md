@@ -1,18 +1,17 @@
-## Tests and Examples
+# Tests and Examples
 
 Run tests with `python -m doctest tests/doctests.md`.
 
 <details>
     <summary>DocTest setup</summary>
 
-    >>> import sys; sys.path.append("src")
-    >>> from qyaml import qyaml, print_results
+    >>> from src.qyaml.qyaml import qyaml, print_results
     >>> qy = qyaml
     >>> def qyaml(d, q): print_results(qy(d, q))
 
 </details>
 
-#### Example input
+## Example input
 
     >>> doc = """
     ... dict:
@@ -21,7 +20,7 @@ Run tests with `python -m doctest tests/doctests.md`.
     ... list: [ 42, { second: 73 }, 'third' ]
     ... """
 
-### Querying dictionaries
+## Querying dictionaries
 
     >>> qyaml(doc, 'dict: key1')
     - dict:
@@ -59,7 +58,25 @@ Run tests with `python -m doctest tests/doctests.md`.
 
     >>> qyaml('', 'missing')
 
-### Querying lists
+    >>> qyaml("""---
+    ... key1:
+    ...   value: good
+    ...   criterium: one
+    ... key2:
+    ...   value: bad
+    ...   criterium: two
+    ... key3:
+    ...   value: good too
+    ...   criterium: none
+    ... """, '"key.": [criterium: "n?one", value]')
+    - key1:
+        value: good
+        criterium: one
+    - key3:
+        value: good too
+        criterium: one
+
+## Querying lists
 
     >>> qyaml(doc, 'list: 1')
     - list:
@@ -124,7 +141,7 @@ Run tests with `python -m doctest tests/doctests.md`.
     - - a
       - b
 
-### Combining
+## Combining
 
     >>> qyaml(doc, '[dict: key1, list: 0]')
     - dict:
@@ -143,7 +160,7 @@ Run tests with `python -m doctest tests/doctests.md`.
         - - key1: value4
           - key2: value5
 
-### Query characters
+## Query characters
 
     >>> qyaml(doc, 'dict: {key1: [0, 3, 4]}')
     - dict:
@@ -152,7 +169,7 @@ Run tests with `python -m doctest tests/doctests.md`.
         - h
         - a
 
-### Multiple documents or queries
+## Multiple documents or queries
 
     >>> qyaml("""dict: alpha
     ... ---
@@ -165,3 +182,18 @@ Run tests with `python -m doctest tests/doctests.md`.
     ... 1""")
     - 1
     - 2
+
+## Filter
+
+    >>> qyaml("""dict:
+    ...   key1:
+    ...     label: one
+    ...     value: good
+    ...   key2:
+    ...     label: two
+    ...     value: bad
+    ...   key3:
+    ...     label: one
+    ...     value: good too
+    ... """, "dict: ")
+    ...
