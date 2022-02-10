@@ -127,9 +127,9 @@ def list_list(doc: list, query: list) -> ResultGenerator:
     yield from ((False, query[i]) for i in range(len(query)) if not i in found)
 
 
-def for_q_in_query(doc, query) -> ResultGenerator:
+def str_list(doc: str, query: list) -> ResultGenerator:
     """
-    >>> [*for_q_in_query('abcde', [1, 2, 3])]
+    >>> [*str_list('abcde', [1, 2, 3])]
     [(True, 'b'), (True, 'c'), (True, 'd')]
     """
     for q in query:
@@ -140,25 +140,26 @@ def dict_dict(doc: dict, query: dict) -> ResultGenerator:
     """
     >>> [*dict_dict({'key1': 'value1', 'key2': 'value2'},
     ... {'key1': 'value1', 'key2': 'value3'})]
-    [(False, {'key2': 'value3'}), (True, {'key1': ['value1']})]
+    [(True, {'key1': 'value1'}), (False, {'key2': 'value3'})]
     >>> [*dict_dict({'key1': {'value1': 'value2'}},
     ... {'key.': 'value1'})]
-    [(True, {'key1': [{'value1': 'value2'}]})]
+    [(True, {'key1': {'value1': 'value2'}})]
     """
-    result = {}
     for k, v in query.items():
-        keys = filter(lambda kk: re.fullmatch(k, kk) if type(k) == str else k, doc.keys()) 
+        keys = filter(lambda kk: re.fullmatch(k, kk)
+                      if type(k) == str else k, doc.keys())
         for dk in keys:
+            result = {}
             for ok, x in do_query(doc.get(dk), v):
                 if ok:
                     if dk in result:
-                        result[dk].append(x)
-                    else:
-                        result[dk] = [x]
+                        yield (True, result)
+                        result = {}
+                    result[dk] = x
                 else:
                     yield (False, {dk: v})
-    if len(result):
-        yield (True, result)
+            if result:
+                yield (True, result)
 
 
 def dok_list(doc, query: list):
@@ -202,20 +203,27 @@ def list_dict(doc: list, query: dict) -> ResultGenerator:
         else:
             yield from do_query(d, query)
 
-def dict_list(doc, query) -> ResultGenerator:
-    dd = []
-    for q in query:
+
+def dict_list(doc: dict, query: list) -> ResultGenerator:
+    """
+    >>> [*dict_list({'key1': 'value1', 'key2': {'key22': 'value2'}}, ['key1', {'key2': 'key22'}, 'key3'])]
+    [(True, {'key1': 'value1'}), (True, {'key2': {'key22': 'value2'}}), (False, 'key3')]
+    >>> [*dict_list({'key1': 'value1', 'key2': {'key22': 'value2'}}, ['key.'])]
+    [(True, {'key1': 'value1'}), (True, {'key2': {'key22': 'value2'}})]
+    """
+    found = set()
+    for i, q in enumerate(query):
         for ok, x in do_query(doc, q):
             if ok:
-                dd.append(x)
+                found.add(i)
+                yield (True, x)
             else:
                 break
-        else: continue
+        else:
+            continue
         break
-    else:
-        yield from ((True, v) for v in dd)
-        return
-    yield (False, query)
+    yield from ((False, query[i]) for i in range(len(query)) if not i in found)
+
 
 def x_index(doc, query) -> ResultGenerator:
     yield (True, doc[query]) if 0 <= query < len(doc) else (False, query)
@@ -227,7 +235,7 @@ def x_key(doc, query) -> ResultGenerator:
 
 MATCHING_RULES: dict[str, dict[str, ResultGenerator]] = {
     None: {None: eq},
-    str: {str: matchfunc, int: x_index, list: for_q_in_query},
+    str: {str: matchfunc, int: x_index, list: str_list},
     int: {int: eq, float: eq},
     float: {int: eq, float: eq},
     bool: {bool: eq},
@@ -268,4 +276,3 @@ def main():
     except Exception as err:
         print("Error:", err, file=sys.stderr)
         exit(1)
-

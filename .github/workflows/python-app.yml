@@ -32,4 +32,10 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with doctest
       run: |
-        pytest --doctest-glob="tests/*.md"
+        python -m doctest tests/doctests.md
+    - name: Test qyaml code with doctest
+      run: |
+        pytest --doctest-glob="src/qyaml/*.py"
+    - name: Test fyaml code with doctest
+      run: |
+        pytest --doctest-glob="src/fyaml/*.py"
