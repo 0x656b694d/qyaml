@@ -16,7 +16,7 @@ import re
 from typing import Any, Generator, Tuple
 
 
-def qyaml(docs, *queries):
+def parse(docs, *queries):
     result, errors = [], []
     for doc in yaml.safe_load_all(docs):
         for query in queries:
@@ -261,18 +261,3 @@ def print_results(results):
     if len(r):
         yaml.safe_dump(r, stream=sys.stdout, canonical=False)
     return len(err) == 0
-
-
-def main():
-    if len(sys.argv) < 2:
-        print(__doc__, file=sys.stderr)
-        print("\nUsage: %s query < doc" %
-              sys.argv[0], file=sys.stderr)
-        exit(1)
-
-    try:
-        ok = print_results(qyaml(sys.stdin, *sys.argv[1:]))
-        exit(0 if ok else 1)
-    except Exception as err:
-        print("Error:", err, file=sys.stderr)
-        exit(1)

@@ -1,16 +1,10 @@
 #!/usr/bin/env python3
 
-import sys
 import yaml
 import json
 
 
-def print_results(docs, args):
-    for d in fyaml(docs, args):
-        print(d)
-
-
-def fyaml(docs, args):
+def flatten(docs, args):
     if args.json:
         result = []
         for doc in yaml.safe_load_all(docs):
@@ -39,12 +33,12 @@ def format(doc, args):
         yield doc
 
 
+def print_results(results):
+    for line in results:
+        print(line)
+
+
 class Args(object):
     def __init__(self, argv) -> None:
         self.keys = "keys" in argv
         self.json = "json" in argv
-
-
-def main():
-    print_results(sys.stdin, Args(sys.argv))
-
